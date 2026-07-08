@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+  <section class="section-card">
   <h2>Ergebnis</h2>
   <ul class="result-list">
     {% for r in results %}
@@ -18,4 +19,5 @@
     {% endfor %}
   </ul>
   <p><a href="/r/{{ token }}">Zurück zur Liste</a></p>
+  </section>
 {% endblock %}

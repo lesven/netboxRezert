@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+  <section class="section-card">
   <h2>Änderungen bestätigen</h2>
   <p class="notice notice-warning">
     Es gibt kein Vier-Augen-Prinzip – bitte prüfe die Liste sorgfältig. Die Änderung
@@ -7,26 +8,28 @@
   </p>
 
   <form method="post" action="/r/{{ token }}/save">
-    <table class="vm-table">
-      <thead>
-        <tr>
-          <th>VM</th>
-          <th>Bisheriger Owner</th>
-          <th></th>
-          <th>Neuer Owner</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for c in changes %}
-        <tr>
-          <td>{{ c.vm_name }}</td>
-          <td>{{ c.old_contact_name or "–" }}</td>
-          <td>&rarr;</td>
-          <td><strong>{{ c.new_contact_name }}</strong></td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-scroll">
+      <table class="vm-table">
+        <thead>
+          <tr>
+            <th>VM</th>
+            <th>Bisheriger Owner</th>
+            <th></th>
+            <th>Neuer Owner</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in changes %}
+          <tr>
+            <td>{{ c.vm_name }}</td>
+            <td>{{ c.old_contact_name or "–" }}</td>
+            <td>&rarr;</td>
+            <td><strong>{{ c.new_contact_name }}</strong></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
 
     {% for c in changes %}
       <input type="hidden" name="vm_id" value="{{ c.vm_id }}">
@@ -42,4 +45,5 @@
       <button type="submit">Jetzt speichern</button>
     </div>
   </form>
+  </section>
 {% endblock %}

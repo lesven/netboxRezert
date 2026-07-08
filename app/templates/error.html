@@ -1,10 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
   <div class="error-box">
-    <h2>{{ title }}</h2>
-    <p>{{ message }}</p>
-    {% if retry_url %}
-      <p><a class="button-secondary" href="{{ retry_url }}">Erneut versuchen</a></p>
-    {% endif %}
+    <svg class="error-icon" width="24" height="24" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true">
+      <path d="M12 9v4"></path>
+      <path d="M10.29 3.86 1.82 18a1.5 1.5 0 0 0 1.29 2.25h17.78A1.5 1.5 0 0 0 22.18 18L13.71 3.86a1.5 1.5 0 0 0-2.42 0Z"></path>
+      <path d="M12 17h.01"></path>
+    </svg>
+    <div>
+      <h2>{{ title }}</h2>
+      <p>{{ message }}</p>
+      {% if retry_url %}
+        <p><a class="button-secondary" href="{{ retry_url }}">Erneut versuchen</a></p>
+      {% endif %}
+    </div>
   </div>
 {% endblock %}

@@ -28,6 +28,7 @@
              placeholder="VM nach Name filtern (wirkt auf beide Tabellen unten)…">
     </div>
 
+    <section class="section-card" aria-labelledby="owner-section">
     <h2 id="owner-section">Owner-Zuweisung</h2>
     <form method="post" action="/r/{{ token }}/confirm" id="vm-form">
       <div class="bulk-toolbar" id="bulk-toolbar">
@@ -89,7 +90,9 @@
       </div>
       <button type="submit" id="submit-btn" disabled>Änderungen prüfen</button>
     </form>
+    </section>
 
+    <section class="section-card" aria-labelledby="recert-section">
     <h2 id="recert-section">Rezertifizierung</h2>
     <p class="intro">
       Unabhängig von der Owner-Zuweisung: pro VM festhalten, ob sie noch benötigt wird,
@@ -142,6 +145,7 @@
       </div>
       <button type="submit" id="recert-submit-btn" disabled>Rezertifizierung speichern</button>
     </form>
+    </section>
   {% endif %}
 {% endblock %}
 
