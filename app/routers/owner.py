@@ -28,11 +28,13 @@ def _format_date_de(value: str | None) -> str:
 templates.env.filters["date_de"] = _format_date_de
 
 
-def _error_page(request: Request, status_code: int, title: str, message: str) -> HTMLResponse:
+def _error_page(
+    request: Request, status_code: int, title: str, message: str, retry_url: str | None = None
+) -> HTMLResponse:
     return templates.TemplateResponse(
         request,
         "error.html",
-        {"title": title, "message": message},
+        {"title": title, "message": message, "retry_url": retry_url},
         status_code=status_code,
     )
 
@@ -75,6 +77,7 @@ def show_vm_list(request: Request, token: str):
             502,
             "NetBox nicht erreichbar",
             f"Die VM-Liste konnte nicht geladen werden: {exc}. Bitte später erneut versuchen.",
+            retry_url=f"/r/{token}",
         )
 
 
@@ -143,6 +146,7 @@ async def confirm_changes(request: Request, token: str):
             502,
             "NetBox nicht erreichbar",
             f"Die Änderungen konnten nicht überprüft werden: {exc}. Bitte später erneut versuchen.",
+            retry_url=f"/r/{token}",
         )
 
     if not changes:

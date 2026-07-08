@@ -5,12 +5,55 @@
   --changed-bg: #fff7cc;
   --error: #b91c1c;
   --ok: #15803d;
+  --notice-bg: #eef2ff;
+  --notice-warning-bg: #fff7cc;
+  --notice-warning-border: #e0c200;
+  --text-muted: #666;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --border: #444;
+    --changed-bg: #4a4210;
+    --error: #f87171;
+    --ok: #4ade80;
+    --notice-bg: #1e2a4a;
+    --notice-warning-bg: #4a4210;
+    --notice-warning-border: #a68b00;
+    --text-muted: #aaa;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   font-family: system-ui, sans-serif;
   margin: 0;
   padding: 0 1.5rem 3rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 0 0.75rem 2rem;
+  }
+
+  .app-header h1 {
+    font-size: 1.05rem;
+  }
 }
 
 .app-header h1 {
@@ -22,22 +65,23 @@ body {
 }
 
 .notice {
-  background: #eef2ff;
+  background: var(--notice-bg);
   border: 1px solid var(--border);
   padding: 0.5rem 0.75rem;
   border-radius: 4px;
 }
 
 .notice-warning {
-  background: #fff7cc;
-  border-color: #e0c200;
+  background: var(--notice-warning-bg);
+  border-color: var(--notice-warning-border);
 }
 
 .bulk-toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
-  background: #eef2ff;
+  background: var(--notice-bg);
   border: 1px solid var(--border);
   padding: 0.5rem 0.75rem;
   border-radius: 4px;
@@ -49,10 +93,66 @@ body {
   max-width: 24rem;
 }
 
+.bulk-hint {
+  color: var(--text-muted);
+  flex-basis: 100%;
+}
+
+.section-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 0 0 1rem;
+  padding: 0.6rem 0;
+  font-size: 0.9rem;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: Canvas;
+  color: CanvasText;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-nav a.active {
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* Jump targets need room so the sticky nav above doesn't cover the heading
+   right after an anchor jump. */
+#owner-section,
+#recert-section {
+  scroll-margin-top: 3.5rem;
+}
+
+.vm-filter-bar {
+  margin: 1rem 0;
+}
+
+#vm-filter {
+  width: 100%;
+  max-width: 24rem;
+  box-sizing: border-box;
+  padding: 0.4rem 0.6rem;
+  font: inherit;
+}
+
+.vm-row.filtered-out,
+.recert-row.filtered-out {
+  display: none;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  margin: 1rem 0;
+  -webkit-overflow-scrolling: touch;
+}
+
 table.vm-table {
   border-collapse: collapse;
   width: 100%;
-  margin: 1rem 0;
+  min-width: 640px;
+  margin: 0;
 }
 
 .vm-table th, .vm-table td {
@@ -67,11 +167,28 @@ table.vm-table {
   background: var(--changed-bg);
 }
 
+/* The yellow "changed" background alone isn't enough (color-blind users,
+   screen readers) - .changed-badge carries the same information as text. */
+.changed-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ok);
+  white-space: nowrap;
+}
+
 .recert-comment {
   width: 100%;
   min-width: 16rem;
   box-sizing: border-box;
   font: inherit;
+}
+
+.recert-hint {
+  font-size: 0.85rem;
+  color: var(--error);
+  margin-top: 0.25rem;
 }
 
 .owner-picker {
@@ -109,8 +226,9 @@ table.vm-table {
   color: white;
 }
 
-.owner-dropdown .dropdown-empty {
-  color: #666;
+.owner-dropdown .dropdown-empty,
+.owner-dropdown .dropdown-loading {
+  color: var(--text-muted);
   cursor: default;
 }
 
@@ -122,6 +240,7 @@ button, .button-secondary {
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
   align-items: center;
 }

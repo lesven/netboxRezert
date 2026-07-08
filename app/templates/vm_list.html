@@ -12,57 +12,85 @@
   {% endif %}
 
   {% if not vms %}
-    <p>Aktuell sind dir keine VMs als Product Owner zugeordnet.</p>
+    <p>
+      Aktuell sind dir keine VMs als Product Owner zugeordnet. Falls du erwartest, dass
+      dir VMs zugeordnet sein sollten, wende dich an den Absender dieses Links.
+    </p>
   {% else %}
+    <nav class="section-nav" aria-label="Abschnitte auf dieser Seite">
+      <a href="#owner-section">Zur Owner-Zuweisung</a>
+      <a href="#recert-section">Zur Rezertifizierung</a>
+    </nav>
+
+    <div class="vm-filter-bar">
+      <label for="vm-filter" class="visually-hidden">VM-Listen nach Name filtern</label>
+      <input type="search" id="vm-filter" autocomplete="off"
+             placeholder="VM nach Name filtern (wirkt auf beide Tabellen unten)…">
+    </div>
+
+    <h2 id="owner-section">Owner-Zuweisung</h2>
     <form method="post" action="/r/{{ token }}/confirm" id="vm-form">
       <div class="bulk-toolbar" id="bulk-toolbar">
         <span id="bulk-count">0 ausgewählt</span>
         <div class="owner-picker" id="bulk-owner-picker">
+          <label for="bulk-owner-search" class="visually-hidden">Neuer Owner für ausgewählte VMs</label>
           <input type="text" class="owner-search" id="bulk-owner-search"
+                 role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="bulk-owner-dropdown"
                  placeholder="Neuen Owner für Auswahl suchen…" autocomplete="off">
-          <div class="owner-dropdown" id="bulk-owner-dropdown" hidden></div>
+          <div class="owner-dropdown" id="bulk-owner-dropdown" role="listbox" hidden></div>
         </div>
-        <button type="button" id="bulk-apply-btn" disabled>Auf Auswahl anwenden</button>
+        <button type="button" id="bulk-apply-btn" disabled
+                title="Wähle zuerst VMs per Checkbox und einen neuen Owner aus">Auf Auswahl anwenden</button>
+        <small class="bulk-hint">Erst VMs per Checkbox und einen Owner auswählen</small>
       </div>
-      <table class="vm-table">
-        <thead>
-          <tr>
-            <th><input type="checkbox" id="select-all" title="Alle auswählen"></th>
-            <th>VM-Name</th>
-            <th>Aktueller Owner</th>
-            <th>vCPUs</th>
-            <th>RAM (GB)</th>
-            <th>Disk (GB)</th>
-            <th>Neuer Owner</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for vm in vms %}
-          <tr class="vm-row" data-vm-id="{{ vm.id }}">
-            <td><input type="checkbox" class="row-select"></td>
-            <td>
-              {% if vm.netbox_url %}<a href="{{ vm.netbox_url }}" target="_blank" rel="noopener">{{ vm.name }}</a>{% else %}{{ vm.name }}{% endif %}
-            </td>
-            <td>{{ vm.owner_contact_name or "–" }}</td>
-            <td>{{ vm.vcpus if vm.vcpus is not none else "–" }}</td>
-            <td>{{ vm.memory_gb if vm.memory_gb is not none else "–" }}</td>
-            <td>{{ vm.disk_gb if vm.disk_gb is not none else "–" }}</td>
-            <td>
-              <div class="owner-picker" data-original="{{ vm.owner_contact_id or '' }}">
-                <input type="text" class="owner-search" placeholder="Owner suchen…" autocomplete="off"
-                       value="{{ vm.owner_contact_name or '' }}">
-                <div class="owner-dropdown" hidden></div>
-                <input type="hidden" name="owner_{{ vm.id }}" class="owner-value" value="{{ vm.owner_contact_id or '' }}">
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <div class="table-scroll">
+        <table class="vm-table">
+          <thead>
+            <tr>
+              <th scope="col">
+                <input type="checkbox" id="select-all" aria-label="Alle sichtbaren VMs auswählen" title="Alle sichtbaren auswählen">
+              </th>
+              <th scope="col">VM-Name</th>
+              <th scope="col">Aktueller Owner</th>
+              <th scope="col">vCPUs</th>
+              <th scope="col">RAM (GB)</th>
+              <th scope="col">Disk (GB)</th>
+              <th scope="col">Neuer Owner</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for vm in vms %}
+            <tr class="vm-row" data-vm-id="{{ vm.id }}" data-vm-name="{{ vm.name|lower }}">
+              <td><input type="checkbox" class="row-select" aria-label="{{ vm.name }} auswählen"></td>
+              <td>
+                {% if vm.netbox_url %}<a href="{{ vm.netbox_url }}" target="_blank" rel="noopener">{{ vm.name }}</a>{% else %}{{ vm.name }}{% endif %}
+              </td>
+              <td>{{ vm.owner_contact_name or "–" }}</td>
+              <td>{{ vm.vcpus if vm.vcpus is not none else "–" }}</td>
+              <td>{{ vm.memory_gb if vm.memory_gb is not none else "–" }}</td>
+              <td>{{ vm.disk_gb if vm.disk_gb is not none else "–" }}</td>
+              <td>
+                <div class="owner-picker" data-original="{{ vm.owner_contact_id or '' }}">
+                  <label for="owner-search-{{ vm.id }}" class="visually-hidden">Neuer Product Owner für {{ vm.name }}</label>
+                  <input type="text" class="owner-search" id="owner-search-{{ vm.id }}"
+                         role="combobox" aria-expanded="false" aria-autocomplete="list"
+                         aria-controls="owner-dropdown-{{ vm.id }}"
+                         placeholder="Owner suchen…" autocomplete="off"
+                         value="{{ vm.owner_contact_name or '' }}">
+                  <div class="owner-dropdown" id="owner-dropdown-{{ vm.id }}" role="listbox" hidden></div>
+                  <input type="hidden" name="owner_{{ vm.id }}" class="owner-value" value="{{ vm.owner_contact_id or '' }}">
+                  <span class="changed-badge" hidden>✓ Geändert</span>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
       <button type="submit" id="submit-btn" disabled>Änderungen prüfen</button>
     </form>
 
-    <h2>Rezertifizierung</h2>
+    <h2 id="recert-section">Rezertifizierung</h2>
     <p class="intro">
       Unabhängig von der Owner-Zuweisung: pro VM festhalten, ob sie noch benötigt wird,
       mit optionalem Kommentar. Wird sofort gespeichert, ohne separaten
@@ -70,42 +98,48 @@
       werden geschrieben — unberührte Zeilen bleiben unverändert.
     </p>
     <form method="post" action="/r/{{ token }}/recertify" id="recert-form">
-      <table class="vm-table">
-        <thead>
-          <tr>
-            <th>VM-Name</th>
-            <th>vCPUs</th>
-            <th>RAM (GB)</th>
-            <th>Disk (GB)</th>
-            <th>Zuletzt rezertifiziert am</th>
-            <th>Bisheriger Kommentar</th>
-            <th>Noch benötigt?</th>
-            <th>Kommentar</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for vm in vms %}
-          <tr class="recert-row" data-vm-id="{{ vm.id }}">
-            <td>{{ vm.name }}</td>
-            <td>{{ vm.vcpus if vm.vcpus is not none else "–" }}</td>
-            <td>{{ vm.memory_gb if vm.memory_gb is not none else "–" }}</td>
-            <td>{{ vm.disk_gb if vm.disk_gb is not none else "–" }}</td>
-            <td>{{ vm.rezert_date|date_de }}</td>
-            <td>{{ vm.comment or "–" }}</td>
-            <td>
-              <select name="recert_{{ vm.id }}" class="recert-select">
-                <option value="" selected>– nicht bearbeitet –</option>
-                <option value="ja">Ja, wird noch benötigt</option>
-                <option value="nein">Nein, nicht mehr benötigt</option>
-              </select>
-            </td>
-            <td>
-              <textarea name="comment_{{ vm.id }}" class="recert-comment" rows="2">{{ vm.comment or '' }}</textarea>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <div class="table-scroll">
+        <table class="vm-table">
+          <thead>
+            <tr>
+              <th scope="col">VM-Name</th>
+              <th scope="col">vCPUs</th>
+              <th scope="col">RAM (GB)</th>
+              <th scope="col">Disk (GB)</th>
+              <th scope="col">Zuletzt rezertifiziert am</th>
+              <th scope="col">Bisheriger Kommentar</th>
+              <th scope="col">Noch benötigt?</th>
+              <th scope="col">Kommentar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for vm in vms %}
+            <tr class="recert-row" data-vm-id="{{ vm.id }}" data-vm-name="{{ vm.name|lower }}">
+              <td>{{ vm.name }}</td>
+              <td>{{ vm.vcpus if vm.vcpus is not none else "–" }}</td>
+              <td>{{ vm.memory_gb if vm.memory_gb is not none else "–" }}</td>
+              <td>{{ vm.disk_gb if vm.disk_gb is not none else "–" }}</td>
+              <td>{{ vm.rezert_date|date_de }}</td>
+              <td>{{ vm.comment or "–" }}</td>
+              <td>
+                <label for="recert-select-{{ vm.id }}" class="visually-hidden">Noch benötigt – {{ vm.name }}</label>
+                <select name="recert_{{ vm.id }}" id="recert-select-{{ vm.id }}" class="recert-select">
+                  <option value="" selected>– nicht bearbeitet –</option>
+                  <option value="ja">Ja, wird noch benötigt</option>
+                  <option value="nein">Nein, nicht mehr benötigt</option>
+                </select>
+                <span class="changed-badge" hidden>✓ Geändert</span>
+              </td>
+              <td>
+                <label for="comment-{{ vm.id }}" class="visually-hidden">Kommentar zu {{ vm.name }}</label>
+                <textarea name="comment_{{ vm.id }}" id="comment-{{ vm.id }}" class="recert-comment" rows="2">{{ vm.comment or '' }}</textarea>
+                <div class="recert-hint" hidden>Wird ohne Auswahl bei „Noch benötigt?“ nicht gespeichert.</div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
       <button type="submit" id="recert-submit-btn" disabled>Rezertifizierung speichern</button>
     </form>
   {% endif %}

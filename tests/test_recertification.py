@@ -29,7 +29,7 @@ def test_list_page_shows_rezert_date_as_dd_mm_yyyy(client):
 
     resp = client.get(f"/r/{token}")
     assert resp.status_code == 200
-    row = re.search(r'<tr class="recert-row" data-vm-id="101">.*?</tr>', resp.text, re.S).group(0)
+    row = re.search(r'<tr class="recert-row" data-vm-id="101"[^>]*>.*?</tr>', resp.text, re.S).group(0)
     cells = re.findall(r"<td>(.*?)</td>", row, re.S)
     # columns: name, vcpus, ram, disk, rezert_date, comment
     assert re.fullmatch(r"\d{2}\.\d{2}\.\d{4}", cells[4].strip())

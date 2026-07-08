@@ -3,5 +3,8 @@
   <div class="error-box">
     <h2>{{ title }}</h2>
     <p>{{ message }}</p>
+    {% if retry_url %}
+      <p><a class="button-secondary" href="{{ retry_url }}">Erneut versuchen</a></p>
+    {% endif %}
   </div>
 {% endblock %}
