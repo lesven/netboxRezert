@@ -1,0 +1,17 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8084:8000"
+    environment:
+      NETBOX_URL: ${NETBOX_URL:-http://netbox.internal}
+      NETBOX_TOKEN: ${NETBOX_TOKEN:?NETBOX_TOKEN must be set}
+      NETBOX_MOCK: ${NETBOX_MOCK:-false}
+      DATABASE_PATH: /app/data/tokens.sqlite3
+      BASE_URL: ${BASE_URL:-http://localhost:8080}
+    volumes:
+      - tokens-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  tokens-data:

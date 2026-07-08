@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block content %}
+  <p class="intro">
+    Angemeldet als <strong>{{ owner.name if owner else "unbekannter Contact" }}</strong>.
+    Wähle pro VM einen neuen Product Owner, oder markiere mehrere VMs und weise
+    sie in einem Schritt demselben neuen Owner zu. Änderungen werden erst nach
+    einer Bestätigung tatsächlich nach NetBox geschrieben.
+  </p>
+
+  {% if info_message %}
+    <p class="notice">{{ info_message }}</p>
+  {% endif %}
+
+  {% if not vms %}
+    <p>Aktuell sind dir keine VMs als Product Owner zugeordnet.</p>
+  {% else %}
+    <form method="post" action="/r/{{ token }}/confirm" id="vm-form">
+      <div class="bulk-toolbar" id="bulk-toolbar">
+        <span id="bulk-count">0 ausgewählt</span>
+        <div class="owner-picker" id="bulk-owner-picker">
+          <input type="text" class="owner-search" id="bulk-owner-search"
+                 placeholder="Neuen Owner für Auswahl suchen…" autocomplete="off">
+          <div class="owner-dropdown" id="bulk-owner-dropdown" hidden></div>
+        </div>
+        <button type="button" id="bulk-apply-btn" disabled>Auf Auswahl anwenden</button>
+      </div>
+      <table class="vm-table">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="select-all" title="Alle auswählen"></th>
+            <th>VM-Name</th>
+            <th>Aktueller Owner</th>
+            <th>vCPUs</th>
+            <th>RAM (GB)</th>
+            <th>Disk (GB)</th>
+            <th>Neuer Owner</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for vm in vms %}
+          <tr class="vm-row" data-vm-id="{{ vm.id }}">
+            <td><input type="checkbox" class="row-select"></td>
+            <td>
+              {% if vm.netbox_url %}<a href="{{ vm.netbox_url }}" target="_blank" rel="noopener">{{ vm.name }}</a>{% else %}{{ vm.name }}{% endif %}
+            </td>
+            <td>{{ vm.owner_contact_name or "–" }}</td>
+            <td>{{ vm.vcpus if vm.vcpus is not none else "–" }}</td>
+            <td>{{ vm.memory_gb if vm.memory_gb is not none else "–" }}</td>
+            <td>{{ vm.disk_gb if vm.disk_gb is not none else "–" }}</td>
+            <td>
+              <div class="owner-picker" data-original="{{ vm.owner_contact_id or '' }}">
+                <input type="text" class="owner-search" placeholder="Owner suchen…" autocomplete="off"
+                       value="{{ vm.owner_contact_name or '' }}">
+                <div class="owner-dropdown" hidden></div>
+                <input type="hidden" name="owner_{{ vm.id }}" class="owner-value" value="{{ vm.owner_contact_id or '' }}">
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <button type="submit" id="submit-btn" disabled>Änderungen prüfen</button>
+    </form>
+
+    <h2>Rezertifizierung</h2>
+    <p class="intro">
+      Unabhängig von der Owner-Zuweisung: pro VM festhalten, ob sie noch benötigt wird,
+      mit optionalem Kommentar. Wird sofort gespeichert, ohne separaten
+      Bestätigungsschritt. Nur Zeilen, bei denen du explizit Ja/Nein auswählst,
+      werden geschrieben — unberührte Zeilen bleiben unverändert.
+    </p>
+    <form method="post" action="/r/{{ token }}/recertify" id="recert-form">
+      <table class="vm-table">
+        <thead>
+          <tr>
+            <th>VM-Name</th>
+            <th>vCPUs</th>
+            <th>RAM (GB)</th>
+            <th>Disk (GB)</th>
+            <th>Zuletzt rezertifiziert am</th>
+            <th>Bisheriger Kommentar</th>
+            <th>Noch benötigt?</th>
+            <th>Kommentar</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for vm in vms %}
+          <tr class="recert-row" data-vm-id="{{ vm.id }}">
+            <td>{{ vm.name }}</td>
+            <td>{{ vm.vcpus if vm.vcpus is not none else "–" }}</td>
+            <td>{{ vm.memory_gb if vm.memory_gb is not none else "–" }}</td>
+            <td>{{ vm.disk_gb if vm.disk_gb is not none else "–" }}</td>
+            <td>{{ vm.rezert_date|date_de }}</td>
+            <td>{{ vm.comment or "–" }}</td>
+            <td>
+              <select name="recert_{{ vm.id }}" class="recert-select">
+                <option value="" selected>– nicht bearbeitet –</option>
+                <option value="ja">Ja, wird noch benötigt</option>
+                <option value="nein">Nein, nicht mehr benötigt</option>
+              </select>
+            </td>
+            <td>
+              <textarea name="comment_{{ vm.id }}" class="recert-comment" rows="2">{{ vm.comment or '' }}</textarea>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <button type="submit" id="recert-submit-btn" disabled>Rezertifizierung speichern</button>
+    </form>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+  <script>window.RECERT_TOKEN = {{ token|tojson }};</script>
+  <script src="/static/app.js"></script>
+{% endblock %}

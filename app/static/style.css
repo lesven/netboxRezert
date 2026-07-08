@@ -1,0 +1,154 @@
+:root {
+  color-scheme: light dark;
+  --border: #ccc;
+  --accent: #2563eb;
+  --changed-bg: #fff7cc;
+  --error: #b91c1c;
+  --ok: #15803d;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 0 1.5rem 3rem;
+}
+
+.app-header h1 {
+  font-size: 1.25rem;
+}
+
+.intro {
+  max-width: 60ch;
+}
+
+.notice {
+  background: #eef2ff;
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+}
+
+.notice-warning {
+  background: #fff7cc;
+  border-color: #e0c200;
+}
+
+.bulk-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #eef2ff;
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  margin: 1rem 0 0.5rem;
+}
+
+.bulk-toolbar .owner-picker {
+  flex: 1;
+  max-width: 24rem;
+}
+
+table.vm-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.vm-table th, .vm-table td {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.vm-row.changed,
+.recert-row.changed {
+  background: var(--changed-bg);
+}
+
+.recert-comment {
+  width: 100%;
+  min-width: 16rem;
+  box-sizing: border-box;
+  font: inherit;
+}
+
+.owner-picker {
+  position: relative;
+  min-width: 16rem;
+}
+
+.owner-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.25rem 0.4rem;
+}
+
+.owner-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: Canvas;
+  color: CanvasText;
+  border: 1px solid var(--border);
+  max-height: 12rem;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.owner-dropdown div {
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+}
+
+.owner-dropdown div:hover,
+.owner-dropdown div.active {
+  background: var(--accent);
+  color: white;
+}
+
+.owner-dropdown .dropdown-empty {
+  color: #666;
+  cursor: default;
+}
+
+button, .button-secondary {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.result-list {
+  list-style: none;
+  padding: 0;
+}
+
+.result-list li {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  margin-bottom: 0.4rem;
+  border-radius: 4px;
+}
+
+.result-ok { border-left: 4px solid var(--ok); }
+.result-fail { border-left: 4px solid var(--error); }
+
+.error-detail {
+  font-size: 0.9rem;
+  color: var(--error);
+}
+
+.error-box {
+  border: 1px solid var(--error);
+  padding: 1rem;
+  border-radius: 4px;
+  max-width: 60ch;
+}

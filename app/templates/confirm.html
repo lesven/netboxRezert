@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Änderungen bestätigen</h2>
+  <p class="notice notice-warning">
+    Es gibt kein Vier-Augen-Prinzip – bitte prüfe die Liste sorgfältig. Die Änderung
+    wird sofort in NetBox wirksam und protokolliert.
+  </p>
+
+  <form method="post" action="/r/{{ token }}/save">
+    <table class="vm-table">
+      <thead>
+        <tr>
+          <th>VM</th>
+          <th>Bisheriger Owner</th>
+          <th></th>
+          <th>Neuer Owner</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in changes %}
+        <tr>
+          <td>{{ c.vm_name }}</td>
+          <td>{{ c.old_contact_name or "–" }}</td>
+          <td>&rarr;</td>
+          <td><strong>{{ c.new_contact_name }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% for c in changes %}
+      <input type="hidden" name="vm_id" value="{{ c.vm_id }}">
+      <input type="hidden" name="vm_name" value="{{ c.vm_name }}">
+      <input type="hidden" name="old_contact_id" value="{{ c.old_contact_id if c.old_contact_id is not none else '' }}">
+      <input type="hidden" name="old_contact_name" value="{{ c.old_contact_name or '' }}">
+      <input type="hidden" name="new_contact_id" value="{{ c.new_contact_id }}">
+      <input type="hidden" name="new_contact_name" value="{{ c.new_contact_name }}">
+    {% endfor %}
+
+    <div class="actions">
+      <a class="button-secondary" href="/r/{{ token }}">Abbrechen</a>
+      <button type="submit">Jetzt speichern</button>
+    </div>
+  </form>
+{% endblock %}

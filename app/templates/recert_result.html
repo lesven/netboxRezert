@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Rezertifizierung – Ergebnis</h2>
+  <ul class="result-list">
+    {% for r in results %}
+      <li class="{{ 'result-ok' if r.success else 'result-fail' }}">
+        {% if r.success %}✅{% else %}❌{% endif %}
+        <strong>{{ r.change.vm_name }}</strong>:
+        {{ "wird noch benötigt" if r.change.still_in_use else "wird nicht mehr benötigt" }}
+        {% if r.change.comment %} – „{{ r.change.comment }}“{% endif %}
+        {% if not r.success %}
+          <div class="error-detail">Fehler: {{ r.error }}</div>
+        {% elif r.journal_error %}
+          <div class="error-detail">
+            Rezertifizierung wurde gespeichert, aber der Audit-Journal-Eintrag konnte nicht geschrieben werden: {{ r.journal_error }}
+          </div>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+  <p><a href="/r/{{ token }}">Zurück zur Liste</a></p>
+{% endblock %}
