@@ -60,6 +60,20 @@ def test_confirm_with_no_changes_returns_to_list(client):
     assert "Keine Änderungen" in resp.text
 
 
+def test_confirm_ignores_nonexistent_vm_id(client):
+    token = issue_token(1, "Michael Brandt (Bereichsleiter IT)")
+    resp = client.post(f"/r/{token}/confirm", data={"owner_99999": "2"})
+    assert resp.status_code == 200
+    assert "Keine Änderungen" in resp.text
+
+
+def test_confirm_ignores_unknown_target_contact(client):
+    token = issue_token(1, "Michael Brandt (Bereichsleiter IT)")
+    resp = client.post(f"/r/{token}/confirm", data={"owner_101": "99999"})
+    assert resp.status_code == 200
+    assert "Keine Änderungen" in resp.text
+
+
 def test_save_updates_owner_and_writes_journal(client, netbox):
     token = issue_token(1, "Michael Brandt (Bereichsleiter IT)")
     resp = client.post(
