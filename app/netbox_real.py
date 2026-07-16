@@ -11,10 +11,10 @@ from pynetbox.core.query import RequestError
 from app.netbox_client import NetboxClient, NetboxError
 from app.schemas import Contact, Vm
 
-OWNER_FIELD = "vm_product_owner"
-STILL_IN_USE_FIELD = "vm_still_in_use"
-COMMENT_FIELD = "vm_comment"
-REZERT_DATE_FIELD = "vm_rezert_date"
+OWNER_FIELD = "cf_product_owner"
+STILL_IN_USE_FIELD = "cf_still_in_use"
+COMMENT_FIELD = "cf_vm_comment"
+REZERT_DATE_FIELD = "cf_rezert_date"
 
 
 class RestNetboxClient(NetboxClient):
