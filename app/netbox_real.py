@@ -18,8 +18,10 @@ REZERT_DATE_FIELD = "vm_rezert_date"
 
 
 class RestNetboxClient(NetboxClient):
-    def __init__(self, url: str, token: str) -> None:
+    def __init__(self, url: str, token: str, ssl_verify: bool = True) -> None:
         self._api = pynetbox.api(url, token=token)
+        if not ssl_verify:
+            self._api.http_session.verify = False
         self._web_url = url.rstrip("/")
 
     def _vm_web_url(self, vm_id: int) -> str:

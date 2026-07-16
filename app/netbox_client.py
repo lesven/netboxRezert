@@ -57,4 +57,4 @@ def get_netbox_client() -> NetboxClient:
         return MockNetboxClient()
     from app.netbox_real import RestNetboxClient
 
-    return RestNetboxClient(url=settings.netbox_url, token=settings.netbox_token)
+    return RestNetboxClient(url=settings.netbox_url, token=settings.netbox_token, ssl_verify=settings.netbox_ssl_verify)

@@ -1,7 +1,13 @@
-.PHONY: install up down fresh logs test lint lint-fix typecheck generate-tokens seed-netbox
+.PHONY: install up down fresh logs test coverage lint lint-fix typecheck generate-tokens seed-netbox
 
 VM_COUNT ?= 1000
 CONTACT_COUNT ?= 50
+
+deploy:
+	git pull
+	make down
+	make install
+	make up
 
 install:
 	python3 -m venv .venv
@@ -23,6 +29,9 @@ logs:
 
 test:
 	.venv/bin/pytest
+
+coverage:
+	.venv/bin/pytest --cov=app --cov=scripts --cov-report=term-missing
 
 lint:
 	.venv/bin/ruff check .

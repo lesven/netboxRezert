@@ -11,6 +11,8 @@ from app.schemas import Contact, OwnerChange, RecertChange, RecertSaveResult, Sa
 
 logger = logging.getLogger(__name__)
 
+_NETBOX_UNAVAILABLE_MSG = "NetBox ist derzeit nicht erreichbar. Bitte später erneut versuchen."
+
 router = APIRouter(prefix="/r")
 templates = Jinja2Templates(directory="app/templates")
 
@@ -76,7 +78,7 @@ def show_vm_list(request: Request, token: str):
             request,
             502,
             "NetBox nicht erreichbar",
-            f"Die VM-Liste konnte nicht geladen werden: {exc}. Bitte später erneut versuchen.",
+            _NETBOX_UNAVAILABLE_MSG,
             retry_url=f"/r/{token}",
         )
 
@@ -97,7 +99,7 @@ def search_contacts(token: str, q: str = "") -> JSONResponse:
         )
     except NetboxError as exc:
         logger.error("NetBox-Fehler bei Contact-Suche '%s': %s", q, exc)
-        return JSONResponse({"error": str(exc)}, status_code=502)
+        return JSONResponse({"error": _NETBOX_UNAVAILABLE_MSG}, status_code=502)
 
     return JSONResponse({"results": [c.model_dump() for c in results]})
 
@@ -116,8 +118,11 @@ async def confirm_changes(request: Request, token: str):
         for key, value in form.multi_items():
             if not key.startswith("owner_") or not isinstance(value, str):
                 continue
-            vm_id = int(key.removeprefix("owner_"))
-            new_contact_id = int(value)
+            try:
+                vm_id = int(key.removeprefix("owner_"))
+                new_contact_id = int(value)
+            except ValueError:
+                continue  # manipulierter/ungültiger Feld-Key oder -Wert
 
             current_vm = client.get_vm(vm_id)
             if current_vm is None:
@@ -145,12 +150,22 @@ async def confirm_changes(request: Request, token: str):
             request,
             502,
             "NetBox nicht erreichbar",
-            f"Die Änderungen konnten nicht überprüft werden: {exc}. Bitte später erneut versuchen.",
+            _NETBOX_UNAVAILABLE_MSG,
             retry_url=f"/r/{token}",
         )
 
     if not changes:
-        return _render_vm_list(request, token, contact_id, client, "Keine Änderungen ausgewählt.")
+        try:
+            return _render_vm_list(request, token, contact_id, client, "Keine Änderungen ausgewählt.")
+        except NetboxError as exc:
+            logger.error("NetBox-Fehler beim Rendern der VM-Liste nach /confirm: %s", exc)
+            return _error_page(
+                request,
+                502,
+                "NetBox nicht erreichbar",
+                _NETBOX_UNAVAILABLE_MSG,
+                retry_url=f"/r/{token}",
+            )
 
     return templates.TemplateResponse(
         request,
@@ -175,15 +190,31 @@ async def save_changes(
         return _error_page(request, 404, "Link ungültig", "Dieser Link ist unbekannt.")
 
     client = get_netbox_client()
-    requester = client.get_contact(contact_id)
+    try:
+        requester = client.get_contact(contact_id)
+    except NetboxError as exc:
+        logger.error("NetBox-Fehler beim Laden des Token-Contacts %s: %s", contact_id, exc)
+        return _error_page(
+            request,
+            502,
+            "NetBox nicht erreichbar",
+            _NETBOX_UNAVAILABLE_MSG,
+            retry_url=f"/r/{token}",
+        )
     requester_name = requester.name if requester else f"Contact #{contact_id}"
 
     results: list[SaveResult] = []
     for i in range(len(vm_id)):
+        try:
+            parsed_old_contact_id = (
+                int(old_contact_id[i]) if old_contact_id[i] not in ("", "None") else None
+            )
+        except ValueError:
+            parsed_old_contact_id = None
         change = OwnerChange(
             vm_id=vm_id[i],
             vm_name=vm_name[i],
-            old_contact_id=int(old_contact_id[i]) if old_contact_id[i] not in ("", "None") else None,
+            old_contact_id=parsed_old_contact_id,
             old_contact_name=old_contact_name[i] or None,
             new_contact_id=new_contact_id[i],
             new_contact_name=new_contact_name[i],
@@ -233,12 +264,37 @@ async def save_recertification(request: Request, token: str):
     for key, value in form.multi_items():
         if not key.startswith("recert_") or not isinstance(value, str) or value not in ("ja", "nein"):
             continue
-        touched.append((int(key.removeprefix("recert_")), value))
+        try:
+            touched.append((int(key.removeprefix("recert_")), value))
+        except ValueError:
+            continue  # manipulierter/ungültiger Feld-Key
 
     if not touched:
-        return _render_vm_list(request, token, contact_id, client, "Keine Rezertifizierung ausgewählt.")
+        try:
+            return _render_vm_list(
+                request, token, contact_id, client, "Keine Rezertifizierung ausgewählt."
+            )
+        except NetboxError as exc:
+            logger.error("NetBox-Fehler beim Rendern der VM-Liste nach /recertify: %s", exc)
+            return _error_page(
+                request,
+                502,
+                "NetBox nicht erreichbar",
+                _NETBOX_UNAVAILABLE_MSG,
+                retry_url=f"/r/{token}",
+            )
 
-    requester = client.get_contact(contact_id)
+    try:
+        requester = client.get_contact(contact_id)
+    except NetboxError as exc:
+        logger.error("NetBox-Fehler beim Laden des Token-Contacts %s: %s", contact_id, exc)
+        return _error_page(
+            request,
+            502,
+            "NetBox nicht erreichbar",
+            _NETBOX_UNAVAILABLE_MSG,
+            retry_url=f"/r/{token}",
+        )
     requester_name = requester.name if requester else f"Contact #{contact_id}"
 
     results: list[RecertSaveResult] = []

@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     netbox_url: str = "http://localhost:8000"
     netbox_token: str = "changeme"
     netbox_mock: bool = True
+    netbox_ssl_verify: bool = True
 
     database_path: str = "data/tokens.sqlite3"
 
