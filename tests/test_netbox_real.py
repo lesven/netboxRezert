@@ -127,7 +127,7 @@ def test_to_vm_unwraps_nested_owner_object_and_converts_units():
         custom_fields={OWNER_FIELD: {"id": 3, "display": "Tobias Weber", "url": "..."}},
         vcpus=8,
         memory=32768,  # NetBox stores MB
-        disk=500,
+        disk=512000,  # NetBox stores MB (512000 MB = 500 GB)
     )
     vm = _client()._to_vm(record)
     assert vm.owner_contact_id == 3

@@ -67,7 +67,7 @@ def build_vms(
             "cluster": cluster_id,
             "vcpus": rng.choice(VCPU_CHOICES),
             "memory": rng.choice(MEMORY_GB_CHOICES) * 1024,  # NetBox stores memory in MB
-            "disk": rng.choice(DISK_GB_CHOICES),
+            "disk": rng.choice(DISK_GB_CHOICES) * 1024,  # NetBox stores disk in MB
             "tags": [tag_id],
             "custom_fields": {OWNER_FIELD: rng.choice(contact_ids)},
         }

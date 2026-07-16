@@ -38,7 +38,7 @@ class RestNetboxClient(NetboxClient):
             owner_contact_name=owner_name,
             vcpus=float(record.vcpus) if record.vcpus is not None else None,
             memory_gb=(record.memory / 1024) if record.memory is not None else None,
-            disk_gb=float(record.disk) if record.disk is not None else None,
+            disk_gb=(record.disk / 1024) if record.disk is not None else None,
             netbox_url=self._vm_web_url(record.id),
             still_in_use=record.custom_fields.get(STILL_IN_USE_FIELD),
             comment=record.custom_fields.get(COMMENT_FIELD),
